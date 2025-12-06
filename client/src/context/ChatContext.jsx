@@ -26,7 +26,7 @@ export const ChatContextProvider = ({children, user}) => {
     
     // initializing socket
     useEffect(() => {
-  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:6000";
+  const SOCKET_URL = "https://mern-chat-socket-gr8b.onrender.com";
   const newSocket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
   setSocket(newSocket);
   console.log("socket connecting to", SOCKET_URL);
@@ -149,6 +149,7 @@ export const ChatContextProvider = ({children, user}) => {
 
     const createChat = useCallback(async(firstId,secondId)=>{
         const response = await postRequest(`${baseUrl}/chats`, { firstId, secondId });
+
         if(response.error){
             return console.log("Error creating chat",response);
         }
