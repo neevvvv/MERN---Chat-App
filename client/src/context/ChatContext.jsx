@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, baseUrl } from "../utils/services";
 import { io } from "socket.io-client";
 
@@ -25,13 +25,16 @@ export const ChatContextProvider = ({children, user}) => {
     console.log("Notifications",notifications);
     
     // initializing socket
-    useEffect(()=>{
-        const newSocket = io("http://localhost:3000/");
-        setSocket(newSocket);
-        return ()=>{
-            newSocket.disconnect();
-        };
-    },[user]);
+    useEffect(() => {
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:6000";
+  const newSocket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
+  setSocket(newSocket);
+  console.log("socket connecting to", SOCKET_URL);
+  return () => {
+    newSocket.disconnect();
+  };
+}, [user]);
+
     // add online Users
     useEffect(()=>{
         if(socket === null) return;
@@ -135,7 +138,7 @@ export const ChatContextProvider = ({children, user}) => {
 
     const sendTextMessage = useCallback(async(textMessage,sender,currentChatId,setTextMessage)=>{
         if(!textMessage) return console.log("Type a message to send");
-        const response = await postRequest(`${baseUrl}/messages`,JSON.stringify({chatId:currentChatId,senderId:sender._id,text:textMessage}));
+        const response = await postRequest(`${baseUrl}/messages`, { chatId: currentChatId, senderId: sender._id, text: textMessage });
         if(response.error){
             return setSendTextMessageError(response);
         }
@@ -145,7 +148,7 @@ export const ChatContextProvider = ({children, user}) => {
     },[ currentChat,messages,user]);
 
     const createChat = useCallback(async(firstId,secondId)=>{
-        const response = await postRequest(`${baseUrl}/chats`, JSON.stringify({firstId,secondId}));
+        const response = await postRequest(`${baseUrl}/chats`, { firstId, secondId });
         if(response.error){
             return console.log("Error creating chat",response);
         }

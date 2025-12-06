@@ -4,9 +4,11 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 
 const createToken = (_id) => {
-    const jwtkey = process.env.JWT_SECRET_KEY;
-    return jwt.sign({_id}, jwtkey, {expiresIn: "3d"});
+  // prefer JWT_SECRET, then JWT_SECRET_KEY, otherwise fall back to a dev secret
+  const jwtkey = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || "dev_temporary_secret_for_local";
+  return jwt.sign({ _id }, jwtkey, { expiresIn: "3d" });
 };
+
 
 const registerUser = async (req, res) => {
     try{
